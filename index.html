@@ -1,44 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TicTac</title>
-    
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-</head>
-<body>
+    <script
+        crossorigin
+        src="https://unpkg.com/react@18/umd/react.development.js"
+    ></script>
+        <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+        ></script>
+
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    </head>
+    <body>
     <div id="root"></div>
 
-    <!-- 
-        <div className="game">
-        <div className="game-info">
-            Ход: <span className="symbol symbol--x">X</span>
-        </div>
-        <div className="game-field">
-            <button className="cell cell--win"><span className="symbol symbol--x">X</span></button>
-            <button className="cell"><span className="symbol symbol--o">O</span></button>
-            <button className="cell"></button>
-            <button className="cell cell--win"><span className="symbol symbol--x">X</span></button>
-            <button className="cell"><span className="symbol symbol--o">O</span></button>
-            <button className="cell"></button>
-            <button className="cell cell--win"><span className="symbol symbol--x">X</span></button>
-            <button className="cell"><span className="symbol symbol--o">O</span></button>
-            <button className="cell"></button>
-        </div>
-    -->
-
-    </div>
-
     <script type="text/babel">
+    const SYMBOL_X = "X";
+    const SYMBOL_O = "O";
 
-    const SYMBOL_X = 'X'
-    const SYMBOL_O = 'O'
-
-    const computerWinner = (cells) => {
+    const computeWinner = (cells) => {
         const lines = [
             [0, 1, 2],
             [3, 4, 5],
@@ -47,100 +32,132 @@
             [1, 4, 7],
             [2, 5, 8],
             [0, 4, 8],
-            [2, 4, 6]
-        ] 
+            [2, 4, 6],
+        ];
 
         for (let i = 0; i < lines.length; i++) {
-        const [a, b, c] = lines[i];
-        if (
-            cells[a] &&
-            cells[a] === cells[b] &&
-            cells[a] === cells[c]
-            ) {
-                return [a, b, c]
-            }
+            const [a, b, c] = lines[i];
+            if (cells[a] && cells[a] === cells[b] && cells[a] === cells[c]) {
+            return [a, b, c];
+            } 
         }
-    }
+    };
 
     function App() {
-        const [cells, setSells] = React.useState([null, null, null, null, null, null, null, null, null])
-        const [currentStep, setCurrentStep] = React.useState(SYMBOL_O)
-        const [winnerSequence, setWinnerSequence] = React.useState()
+        const [cells, setCells] = React.useState([
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+        ]);
+        const [currentStep, setCurrentStep] = React.useState(SYMBOL_O);
+        const [winnerSequence, setWinnerSequence] = React.useState();
 
-        if (!cells.includes(null)) {
-            alert('Все поля заполнены')
-            setSells([null, null, null, null, null, null, null, null, null])
-            setCurrentStep(SYMBOL_O)
-            setWinnerSequence(null)
-        }
-
-
-        const handlerCellClick = (index) => {
+        const handleCellClick = (index) => {
             if (cells[index] || winnerSequence) {
-                return
+                return;
             }
+            const cellsCopy = cells.slice();
+            cellsCopy[index] = currentStep;
+            const winner = computeWinner(cellsCopy);
 
-            const cellsCopy = cells.slice()
+            setCells(cellsCopy);
+            setCurrentStep(currentStep === SYMBOL_O ? SYMBOL_X : SYMBOL_O);
+            setWinnerSequence(winner);
+        };
 
-            cellsCopy[index] = currentStep
+        const handleResetClick = () => {
+            setCells(Array.from({ length: 9 }, () => null));
+            setCurrentStep(SYMBOL_X);
+            setWinnerSequence(undefined);
+        };
 
-            const winner = computerWinner(cellsCopy)
+        const winnerSymbol = winnerSequence
+            ? cells[winnerSequence[0]]
+            : undefined;
+        const isDraw =
+            !winnerSequence && cells.filter((value) => value).length === 9;
 
-            setWinnerSequence(winner)
-
-            setSells(cellsCopy)
-
-            setCurrentStep(currentStep === SYMBOL_O ? SYMBOL_X : SYMBOL_O)
-
-            setWinnerSequence(winner)
-        }
-
-        const resetGame = () => {
-            setSells([null, null, null, null, null, null, null, null, null])
-            setWinnerSequence(null)
-            setCurrentStep(SYMBOL_O)
-        }
-
-        const getSymbolClassName = (symbol) => {
-            if (symbol === SYMBOL_O) return 'symbol--o'
-            if (symbol === SYMBOL_X) return 'symbol--x'
-            return ``
-        }
-
-        const renderSymbol = (symbol) => <span className={`symbol ${getSymbolClassName(symbol)}`}>{symbol}</span>
-
-        const winnerSymbol = winnerSequence ? cells[winnerSequence[0]] : undefined
-
-        return (<div className="game">
-            <div className="game-info">
-                {winnerSequence ? "Победитель:" : 'Ход:'} {renderSymbol(winnerSymbol?.[0] ?? currentStep)}
-            </div>
-            <div className="game-field">
-                {cells.map((symbol, index) => {
-                    const isWinner = winnerSequence?.includes(index)
-                    return <button 
-                    key={index} 
-                    className={`cell ${isWinner ? `cell--win` : ``}`} 
-                    onClick={() => handlerCellClick(index)}>{
-                        symbol ? renderSymbol(symbol) : null
-                    }</button>
-                })}
-            </div>
-            <div className="game-reset" onClick={() => resetGame()}>
+        return (
+            <div className="game">
+                <GameInfo
+                    isDraw={isDraw}
+                    winnerSymbol={winnerSymbol}
+                    currentStep={currentStep}
+                />
+                <div className="game-field">
+                    {cells.map((symbol, index) => (
+                        <GameCell
+                            key={index}
+                            symbol={symbol}
+                            isWinner={winnerSequence?.includes(index)}
+                            onClick={() => handleCellClick(index)}
+                        />
+                    ))}
+                </div>
+                <button className="reset" onClick={handleResetClick}>
                 Сбросить
+                </button>
             </div>
-        </div>)
+        );
     }
 
-        const root = ReactDOM.createRoot(document.getElementById("root"));
+    function GameInfo({ isDraw, winnerSymbol, currentStep }) {
+        if (isDraw) {
+            return <div className="game-info">Ничья</div>;
+        }
 
-        root.render(<App />)
+        if (winnerSymbol) {
+            return (
+                <div className="game-info">
+                    Победитель: <GameSymbol symbol={winnerSymbol} />
+                </div>
+            );
+        }
+
+        return (
+            <div className="game-info">
+                Ход: <GameSymbol symbol={currentStep} />
+            </div>
+        );
+    }
+
+    function GameCell({ isWinner, onClick, symbol }) {
+        return (
+            <button
+                className={`cell ${isWinner ? "cell--win" : ""}`}
+                onClick={onClick}
+            >
+                {symbol ? <GameSymbol symbol={symbol} /> : null}
+            </button>
+        );
+    }
+
+    function GameSymbol({ symbol }) {
+        const getSymbolClassName = (symbol) => {
+            if (symbol === SYMBOL_X) return "symbol--x";
+            if (symbol === SYMBOL_O) return "symbol--o";
+            return "";
+        };
+        return (
+            <span className={`symbol ${getSymbolClassName(symbol)}`}>
+                {symbol}
+            </span>
+        );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
     </script>
-
     <style>
         html {
-        font-family: Arial, Helvetica, sans-serif;
-    }
+            
+        }
 
     .game {
         display: flex;
@@ -150,7 +167,6 @@
         margin: 100px auto;
         padding: 20px;
         border: 1px solid black;
-        position: relative;
     }
 
     .game-info {
@@ -190,9 +206,14 @@
         color: green;
     }
 
-    .game-reset {
-        margin-top: 12px;
+    .reset {
+        cursor: pointer;
+        margin-top: 10px;
+        background-color: transparent;
+        border: 1px solid gray;
+        padding: 4px 12px;
+        border-radius: 4px;
     }
     </style>
-</body>
+    </body>
 </html>
