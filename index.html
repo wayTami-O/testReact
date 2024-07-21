@@ -43,7 +43,8 @@
         }
     };
 
-    function App() {
+    function useGameState() {
+
         const [cells, setCells] = React.useState([
             null,
             null,
@@ -58,6 +59,7 @@
         const [currentStep, setCurrentStep] = React.useState(SYMBOL_O);
         const [winnerSequence, setWinnerSequence] = React.useState();
 
+        
         const handleCellClick = (index) => {
             if (cells[index] || winnerSequence) {
                 return;
@@ -82,6 +84,29 @@
             : undefined;
         const isDraw =
             !winnerSequence && cells.filter((value) => value).length === 9;
+
+        return {
+            cells,
+            currentStep,
+            winnerSequence,
+            handleCellClick,
+            handleResetClick,
+            winnerSymbol,
+            isDraw
+        }
+    }
+
+    function App() {
+
+        const {
+            cells,
+            currentStep,
+            winnerSequence,
+            handleCellClick,
+            handleResetClick,
+            winnerSymbol,
+            isDraw
+        } = useGameState()
 
         return (
             <div className="game">
